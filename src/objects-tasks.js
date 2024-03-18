@@ -49,8 +49,20 @@ function mergeObjects(/* objects */) {
  *    removeProperties({name: 'John', age: 30, city: 'New York'}, 'age') => {name: 'John', city: 'New York'}
  *
  */
-function removeProperties(/* obj, keys */) {
-  throw new Error('Not implemented');
+function removeProperties(obj, keys) {
+  const newObj = { ...obj }; // Create a shallow copy of the original object
+
+  // Convert keys to an array if it's not already an array
+  const keyArray = Array.isArray(keys) ? keys : [keys];
+
+  // Use array iteration methods to filter out the specified keys
+  keyArray.forEach((key) => {
+    if (Object.hasOwnProperty.call(newObj, key)) {
+      delete newObj[key]; // Delete the property if it exists in the object
+    }
+  });
+
+  return newObj; // Return the modified object
 }
 
 /**
@@ -65,8 +77,21 @@ function removeProperties(/* obj, keys */) {
  *    compareObjects({a: 1, b: 2}, {a: 1, b: 2}) => true
  *    compareObjects({a: 1, b: 2}, {a: 1, b: 3}) => false
  */
-function compareObjects(/* obj1, obj2 */) {
-  throw new Error('Not implemented');
+function compareObjects(obj1, obj2) {
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+
+  // Check if the number of keys is the same
+  if (keys1.length !== keys2.length) {
+    return false;
+  }
+
+  // Check if all keys in obj1 are present in obj2 and have the same values
+  return keys1.every((key) => {
+    return (
+      Object.prototype.hasOwnProperty.call(obj2, key) && obj1[key] === obj2[key]
+    );
+  });
 }
 
 /**
@@ -80,8 +105,8 @@ function compareObjects(/* obj1, obj2 */) {
  *    isEmptyObject({}) => true
  *    isEmptyObject({a: 1}) => false
  */
-function isEmptyObject(/* obj */) {
-  throw new Error('Not implemented');
+function isEmptyObject(obj) {
+  return Object.keys(obj).length === 0;
 }
 
 /**
@@ -100,8 +125,8 @@ function isEmptyObject(/* obj */) {
  *    immutableObj.newProp = 'new';
  *    console.log(immutableObj) => {a: 1, b: 2}
  */
-function makeImmutable(/* obj */) {
-  throw new Error('Not implemented');
+function makeImmutable(obj) {
+  return Object.freeze(obj);
 }
 
 /**
