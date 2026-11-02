@@ -17,8 +17,9 @@
  *    shallowCopy({a: 2, b: { a: [1, 2, 3]}}) => {a: 2, b: { a: [1, 2, 3]}}
  *    shallowCopy({}) => {}
  */
-function shallowCopy(/* obj */) {
-  throw new Error('Not implemented');
+function shallowCopy(obj) {
+  const result = {};
+  return Object.assign(result, obj);
 }
 
 /**
@@ -32,8 +33,16 @@ function shallowCopy(/* obj */) {
  *    mergeObjects([{a: 1, b: 2}, {b: 3, c: 5}]) => {a: 1, b: 5, c: 5}
  *    mergeObjects([]) => {}
  */
-function mergeObjects(/* objects */) {
-  throw new Error('Not implemented');
+function mergeObjects(objects) {
+  return objects.reduce((result, obj) => {
+    const buffObj = result;
+    if (Object.entries(obj)) {
+      Object.entries(obj).forEach((entry) => {
+        buffObj[entry[0]] = (buffObj[entry[0]] ?? 0) + entry[1];
+      });
+    }
+    return buffObj;
+  }, {});
 }
 
 /**
@@ -50,19 +59,11 @@ function mergeObjects(/* objects */) {
  *
  */
 function removeProperties(obj, keys) {
-  const newObj = { ...obj }; // Create a shallow copy of the original object
-
-  // Convert keys to an array if it's not already an array
-  const keyArray = Array.isArray(keys) ? keys : [keys];
-
-  // Use array iteration methods to filter out the specified keys
-  keyArray.forEach((key) => {
-    if (Object.hasOwnProperty.call(newObj, key)) {
-      delete newObj[key]; // Delete the property if it exists in the object
-    }
+  const resulObj = obj;
+  keys.forEach((key) => {
+    delete resulObj[key];
   });
-
-  return newObj; // Return the modified object
+  return resulObj;
 }
 
 /**
@@ -78,20 +79,7 @@ function removeProperties(obj, keys) {
  *    compareObjects({a: 1, b: 2}, {a: 1, b: 3}) => false
  */
 function compareObjects(obj1, obj2) {
-  const keys1 = Object.keys(obj1);
-  const keys2 = Object.keys(obj2);
-
-  // Check if the number of keys is the same
-  if (keys1.length !== keys2.length) {
-    return false;
-  }
-
-  // Check if all keys in obj1 are present in obj2 and have the same values
-  return keys1.every((key) => {
-    return (
-      Object.prototype.hasOwnProperty.call(obj2, key) && obj1[key] === obj2[key]
-    );
-  });
+  return JSON.stringify(obj1) === JSON.stringify(obj2);
 }
 
 /**
@@ -139,8 +127,14 @@ function makeImmutable(obj) {
  *    makeWord({ a: [0, 1], b: [2, 3], c: [4, 5] }) => 'aabbcc'
  *    makeWord({ H:[0], e: [1], l: [2, 3, 8], o: [4, 6], W:[5], r:[7], d:[9]}) => 'HelloWorld'
  */
-function makeWord(/* lettersObject */) {
-  throw new Error('Not implemented');
+function makeWord(lettersObject) {
+  const result = [];
+  Object.keys(lettersObject).forEach((key) => {
+    lettersObject[key].forEach((pos) => {
+      result[pos] = key;
+    });
+  });
+  return result.join('');
 }
 
 /**
@@ -157,8 +151,14 @@ function makeWord(/* lettersObject */) {
  *    sellTickets([25, 25, 50]) => true
  *    sellTickets([25, 100]) => false (The seller does not have enough money to give change.)
  */
-function sellTickets(/* queue */) {
-  throw new Error('Not implemented');
+function sellTickets(queue) {
+  let cash = 0;
+  for (let i = 0; i < queue.length; i += 1) {
+    if (queue[i] === 25) {
+      cash += 25;
+    } else if (queue[i] - 25 > cash) return false;
+  }
+  return true;
 }
 
 /**
@@ -174,8 +174,14 @@ function sellTickets(/* queue */) {
  *    console.log(r.height);      // => 20
  *    console.log(r.getArea());   // => 200
  */
-function Rectangle(/* width, height */) {
-  throw new Error('Not implemented');
+function Rectangle(width, height) {
+  return {
+    width,
+    height,
+    getArea: function getArea() {
+      return this.width * this.height;
+    },
+  };
 }
 
 /**
@@ -188,8 +194,8 @@ function Rectangle(/* width, height */) {
  *    [1,2,3]   =>  '[1,2,3]'
  *    { width: 10, height : 20 } => '{"height":10,"width":20}'
  */
-function getJSON(/* obj */) {
-  throw new Error('Not implemented');
+function getJSON(obj) {
+  return JSON.stringify(obj);
 }
 
 /**
@@ -203,8 +209,8 @@ function getJSON(/* obj */) {
  *    const r = fromJSON(Circle.prototype, '{"radius":10}');
  *
  */
-function fromJSON(/* proto, json */) {
-  throw new Error('Not implemented');
+function fromJSON(proto, json) {
+  return Object.setPrototypeOf(JSON.parse(json), proto);
 }
 
 /**
@@ -233,8 +239,22 @@ function fromJSON(/* proto, json */) {
  *      { country: 'Russia',  city: 'Saint Petersburg' }
  *    ]
  */
-function sortCitiesArray(/* arr */) {
-  throw new Error('Not implemented');
+function sortCitiesArray(arr) {
+  return arr.sort((a, b) => {
+    if (a.country < b.country) {
+      return -1;
+    }
+    if (a.country > b.country) {
+      return 1;
+    }
+    if (a.country === b.country) {
+      if (a.city < b.city) {
+        return -1;
+      }
+      return 1;
+    }
+    return 0;
+  });
 }
 
 /**
@@ -267,8 +287,15 @@ function sortCitiesArray(/* arr */) {
  *    "Poland" => ["Lodz"]
  *   }
  */
-function group(/* array, keySelector, valueSelector */) {
-  throw new Error('Not implemented');
+function group(array, keySelector, valueSelector) {
+  return array.reduce((res, curr) => {
+    if (res.has(keySelector(curr))) {
+      res.get(keySelector(curr)).push(valueSelector(curr));
+    } else {
+      res.set(keySelector(curr), [].concat(valueSelector(curr)));
+    }
+    return res;
+  }, new Map());
 }
 
 /**
@@ -325,35 +352,133 @@ function group(/* array, keySelector, valueSelector */) {
  *  For more examples see unit tests.
  */
 
-const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
-  },
+class MyCssSelectorBuilder {
+  constructor() {
+    this.selector = '';
+    this.components = [];
+  }
 
-  id(/* value */) {
-    throw new Error('Not implemented');
-  },
+  element(value) {
+    if (
+      ['id', 'class', 'attribute', 'pseudo-class', 'pseudo-element'].some(
+        (el) => this.components.includes(el)
+      )
+    ) {
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
+      );
+    }
+    if (this.components.includes('element')) {
+      throw new Error(
+        'Element, id and pseudo-element should not occur more then one time inside the selector'
+      );
+    }
+    const myCssSelectorBuilder = new MyCssSelectorBuilder();
+    myCssSelectorBuilder.selector = this.selector + value;
+    myCssSelectorBuilder.components = [...this.components];
+    myCssSelectorBuilder.components.push('element');
+    return myCssSelectorBuilder;
+  }
 
-  class(/* value */) {
-    throw new Error('Not implemented');
-  },
+  id(value) {
+    if (
+      ['class', 'attribute', 'pseudo-class', 'pseudo-element'].some((el) =>
+        this.components.includes(el)
+      )
+    ) {
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
+      );
+    }
+    if (this.components.includes('id')) {
+      throw new Error(
+        'Element, id and pseudo-element should not occur more then one time inside the selector'
+      );
+    }
+    const myCssSelectorBuilder = new MyCssSelectorBuilder();
+    myCssSelectorBuilder.selector = `${this.selector}#${value}`;
+    myCssSelectorBuilder.components = [...this.components];
+    myCssSelectorBuilder.components.push('id');
+    return myCssSelectorBuilder;
+  }
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
-  },
+  class(value) {
+    if (
+      ['attribute', 'pseudo-class', 'pseudo-element'].some((el) =>
+        this.components.includes(el)
+      )
+    ) {
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
+      );
+    }
+    const myCssSelectorBuilder = new MyCssSelectorBuilder();
+    myCssSelectorBuilder.selector = `${this.selector}.${value}`;
+    myCssSelectorBuilder.components = [...this.components];
+    myCssSelectorBuilder.components.push('class');
+    return myCssSelectorBuilder;
+  }
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
-  },
+  attr(value) {
+    if (
+      ['pseudo-class', 'pseudo-element'].some((el) =>
+        this.components.includes(el)
+      )
+    ) {
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
+      );
+    }
+    const myCssSelectorBuilder = new MyCssSelectorBuilder();
+    myCssSelectorBuilder.selector = `${this.selector}[${value}]`;
+    myCssSelectorBuilder.components = [...this.components];
+    myCssSelectorBuilder.components.push('attribute');
+    return myCssSelectorBuilder;
+  }
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
-  },
+  pseudoClass(value) {
+    if (this.components.includes('pseudo-element')) {
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
+      );
+    }
+    const myCssSelectorBuilder = new MyCssSelectorBuilder();
+    myCssSelectorBuilder.selector = `${this.selector}:${value}`;
+    myCssSelectorBuilder.components = [...this.components];
+    myCssSelectorBuilder.components.push('pseudo-class');
+    return myCssSelectorBuilder;
+  }
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
-  },
-};
+  pseudoElement(value) {
+    if (this.components.includes('pseudo-element')) {
+      throw new Error(
+        'Element, id and pseudo-element should not occur more then one time inside the selector'
+      );
+    }
+    const myCssSelectorBuilder = new MyCssSelectorBuilder();
+    myCssSelectorBuilder.selector = `${this.selector}::${value}`;
+    myCssSelectorBuilder.components = [...this.components];
+    myCssSelectorBuilder.components.push('pseudo-element');
+    return myCssSelectorBuilder;
+  }
+
+  combine(selector1, combinator, selector2) {
+    this.combinator = combinator;
+    const myCssSelectorBuilder = new MyCssSelectorBuilder();
+    myCssSelectorBuilder.selector = `${selector1.selector} ${combinator} ${selector2.selector}`;
+    return myCssSelectorBuilder;
+  }
+
+  stringify() {
+    const result = this.selector;
+    this.selector = '';
+    this.components = [];
+    this.components.length = 0;
+    return result;
+  }
+}
+
+const cssSelectorBuilder = new MyCssSelectorBuilder();
 
 module.exports = {
   shallowCopy,
